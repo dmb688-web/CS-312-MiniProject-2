@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Joke Generator</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>🎭 Joke Generator</h1>
+      
+    </header>
+
+    <!-- Navigation Bar -->
+    <nav class="nav-bar">
+      <a href="/" class="nav-btn">🏠 Home</a>
+      <a href="/random" class="nav-btn">🎲 Random</a>
+      <a href="/dadjoke" class="nav-btn">👨 Dad Jokes</a>
+      <a href="/category/general" class="nav-btn">😊 General</a>
+      <a href="/category/programming" class="nav-btn">💻 Programming</a>
+      <a href="/category/knock-knock" class="nav-btn">🚪 Knock-Knock</a>
+    </nav>
+
+       <!-- Error Message -->
+    <% if (error) { %>
+      <div class="alert alert-error">
+        <%= error %>
+      </div>
+    <% } %>
+
+    <!-- Featured Joke (Single Display) -->
+    <% if (featuredJoke) { %>
+      <div class="featured-joke">
+        <div class="joke-badge">
+          <% if (featuredJoke.type === 'dad') { %>
+            👨 Dad Joke
+          <% } else { %>
+            🎯 <%= featuredJoke.type %>
+          <% } %>
+        </div>
+        
+        <div class="joke-content">
+          <div class="setup">
+            <p><%= featuredJoke.setup %></p>
+          </div>
+          
+          <div class="punchline-container">
+            <button class="reveal-btn" onclick="revealPunchline(this)">
+              👉 Click for Punchline
+            </button>
+            <div class="punchline hidden">
+              <p><%= featuredJoke.punchline %></p>
+            </div>
+          </div>
+        </div>
+
+        <div class="joke-actions">
+          <button onclick="shareJoke('<%= featuredJoke.setup %>', '<%= featuredJoke.punchline %>')" class="action-btn">
+            📤 Share
+          </button>
+          <button onclick="copyJoke('<%= featuredJoke.setup %>', '<%= featuredJoke.punchline %>')" class="action-btn">
+            📋 Copy
+          </button>
+          <a href="/random" class="action-btn">
+            🔄 New Joke
+          </a>
+        </div>
+      </div>
+    <% } %>
+
+    <!-- Multiple Jokes Display (Category Results) -->
+    <% if (jokes && jokes.length > 0) { %>
+      <div class="category-header">
+        <h2>
+          <% if (selectedCategory) { %>
+            <%= selectedCategory.charAt(0).toUpperCase() + selectedCategory.slice(1) %> Jokes
+          <% } else { %>
+            Joke Collection
+          <% } %>
+        </h2>
+        <p class="joke-count"><%= jokes.length %> jokes found</p>
+      </div>
+
+      <div class="jokes-grid">
+        <% jokes.forEach((joke, index) => { %>
+          <div class="joke-card" data-index="<%= index %>">
+            <div class="joke-number">#<%= index + 1 %></div>
+            
+            <div class="joke-text">
+              <div class="setup-mini">
+                <%= joke.setup %>
+              </div>
+              
+              <div class="punchline-mini-container">
+                <button class="reveal-btn-mini" onclick="revealPunchlineMini(this)">
+                  Show Punchline
+                </button>
+                <div class="punchline-mini hidden">
+                  <%= joke.punchline %>
+                </div>
+              </div>
+            </div>
+
+            <div class="joke-card-actions">
+              <button onclick="copyJoke('<%= joke.setup %>', '<%= joke.punchline %>')" class="mini-action-btn" title="Copy">
+                📋
+              </button>
+              <button onclick="shareJoke('<%= joke.setup %>', '<%= joke.punchline %>')" class="mini-action-btn" title="Share">
+                📤
+              </button>
+            </div>
+          </div>
+        <% }); %>
+      </div>
+    <% } %>
+
+    <!-- Welcome Screen -->
+    <% if (!featuredJoke && !jokes && !error) { %>
+      <div class="welcome-screen">
+        <div class="welcome-emoji">😂</div>
+        <h2>Welcome to Joke Generator!</h2>
+        <p>Choose a category above or get a random joke to start laughing</p>
+        
+        <div class="features-grid">
+          <div class="feature-card">
+            <span class="feature-icon">🎲</span>
+            <h3>Random Jokes</h3>
+            <p>Get surprise jokes from all categories</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">👨</span>
+            <h3>Dad Jokes</h3>
+            <p>Classic groan-worthy humor</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">💻</span>
+            <h3>Programming</h3>
+            <p>Jokes for developers</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">🚪</span>
+            <h3>Knock-Knock</h3>
+            <p>Traditional knock-knock jokes</p>
+          </div>
+        </div>
+      </div>
+    <% } %>
+
+      </div>
+
+  <script>
+    function revealPunchline(button) {
+      const punchline = button.nextElementSibling;
+      punchline.classList.remove('hidden');
+      button.style.display = 'none';
+    }
+
+    function revealPunchlineMini(button) {
+      const punchline = button.nextElementSibling;
+      punchline.classList.remove('hidden');
+      button.style.display = 'none';
+    }
+
+    function copyJoke(setup, punchline) {
+      const jokeText = `${setup}\n\n${punchline}`;
+      navigator.clipboard.writeText(jokeText).then(() => {
+        alert('Joke copied to clipboard! 📋');
+      }).catch(() => {
+        alert('Failed to copy joke');
+      });
+    }
+
+    function shareJoke(setup, punchline) {
+      const jokeText = `${setup}\n\n${punchline}`;
+      
+      if (navigator.share) {
+        navigator.share({
+          title: 'Check out this joke!',
+          text: jokeText
+        }).catch(() => {
+          // User cancelled sharing
+        });
+      } else {
+        copyJoke(setup, punchline);
+      }
+    }
+  </script>
+</body>
+</html>
